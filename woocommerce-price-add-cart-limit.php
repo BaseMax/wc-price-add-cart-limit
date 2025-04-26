@@ -53,8 +53,7 @@ class WC_Price_Add_Cart_Limit {
         if ('yes' === get_post_meta( $product_id, '_enable_suggested_price', true)) {
             $user_id = get_current_user_id();
             update_user_meta($user_id, 'price_lock_' . $product_id, time());
-
-            wc_add_notice(__( 'شما محدود شده اید و امکان خرید این محصول را تا مدتی ندارید.', 'wc-price-add-cart-limit' ), 'error');
+            // wc_add_notice(__( 'شما محدود شده اید و امکان خرید این محصول را تا مدتی ندارید.', 'wc-price-add-cart-limit' ), 'error');
         }
     }
 
@@ -70,9 +69,7 @@ class WC_Price_Add_Cart_Limit {
                 true
             );
 
-            wp_localize_script('wc-price-add-cart-limit', 'wc_price_add_cart_limit_vars', array(
-                'expired_text' => __('Custom price expired', 'wc-price-add-cart-limit')
-            ));
+            wp_localize_script('wc-price-add-cart-limit', 'wc_price_add_cart_limit_vars', array('expired_text' => __('Custom price expired', 'wc-price-add-cart-limit')));
         } else {
             error_log('Price timer JS file missing: ' . $js_path);
         }
@@ -104,7 +101,7 @@ class WC_Price_Add_Cart_Limit {
                 
                 $needs_recalculation = true;
                 
-                wc_add_notice(__('Your custom price offer has expired. Price has been updated to regular price.', 'wc-price-add-cart-limit'), 'notice');
+                wc_add_notice(__('مدت زمان مجاز شما جهت نهایی کردن خرید گذشت. قیمت محصول به قیمت معقول تغییر یافت.', 'wc-price-add-cart-limit'), 'notice');
             }
         }
         
@@ -191,6 +188,7 @@ class WC_Price_Add_Cart_Limit {
 
     public function display_price_input() {
         if (!is_product()) return;
+
         global $product;
         if (get_post_meta($product->get_id(), '_enable_suggested_price', true) !== 'yes') return;
 
@@ -199,12 +197,9 @@ class WC_Price_Add_Cart_Limit {
         }
 
         if (is_user_logged_in()) {
-            // var_dump("user logged in...");
             $lock = get_user_meta(get_current_user_id(), 'price_lock_' . $product->get_id(), true);
-            // var_dump($lock);
-            // var_dump((time() - intval($lock)));
             if ($lock && (time() - intval($lock)) < $this->TIME_LIMIT) {
-                    wc_print_notice(__('شما محدود شده اید و نمی توانید مجدد این محصول را به سبد اضافه کنید.', 'wc-price-add-cart-limit'), 'notice');
+                wc_print_notice(__('شما محدود شده اید و نمی توانید اکنون این محصول را با قیمت دلخواه خرید کنید.', 'wc-price-add-cart-limit'), 'notice');
                 return;
             }
         }
