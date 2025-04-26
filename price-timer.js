@@ -1,32 +1,41 @@
 (function($) {
-    function updateTimers() {
-        $('.custom-price-timer').each(function() {
-            const timerElement = $(this);
-            const expiration = parseInt(timerElement.data('expiration'));
-            const now = Math.floor(Date.now() / 1000);
-            const remaining = expiration - now;
+    $(function() {
+        const $timers = $('.custom-price-timer');
+        if (!$timers.length) {
+            return;
+        }
 
-            if (remaining <= 0) {
-                timerElement.text(timerElement.data('expired-text'));
-                location.reload();
-                return;
-            }
-
-            const minutes = Math.floor(remaining / 60);
-            const seconds = remaining % 60;
-            timerElement.find('.timer').text(
-                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-            );
+        const expiredText = wc_price_add_cart_limit_vars.expired_text;
+        $timers.each(function() {
+            $(this).data('expired-text', expiredText);
         });
-    }
 
-    $(document).ready(function() {
-        $('.custom-price-timer').data(
-            'expired-text', 
-            wc_price_add_cart_limit_vars.expired_text
-        );
+        const intervalId = setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            let shouldReload = false;
 
-        updateTimers();
-        setInterval(updateTimers, 1000);
+            $timers.each(function() {
+                const $el         = $(this);
+                const expiration  = parseInt($el.data('expiration'), 10);
+                const remaining   = expiration - now;
+
+                if (remaining <= 0) {
+                    $el.text($el.data('expired-text'));
+                    shouldReload = true;
+                    return false;
+                }
+
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                $el.find('.timer').text(
+                    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+                );
+            });
+
+            if (shouldReload) {
+                clearInterval(intervalId);
+                window.location.reload();
+            }
+        }, 1000);
     });
 })(jQuery);
